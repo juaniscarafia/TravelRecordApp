@@ -33,20 +33,41 @@ namespace TravelRecordApp
 
         private void ToolbarItem_Clicked(object sender, EventArgs e)
         {
-            Post post = new Post()
+            try
             {
-                Experience = expretienceEntry.Text
-            };
+                var selectedVenue = venueListView.SelectedItem as Venue;
+                var firstCategory = selectedVenue.categories.FirstOrDefault();
+                Post post = new Post()
+                {
+                    Experience = expretienceEntry.Text,
+                    CategoryId = firstCategory.id,
+                    CategoryName = firstCategory.name,
+                    Address = selectedVenue.location.address,
+                    Distance = selectedVenue.location.distance,
+                    Latitude = selectedVenue.location.lat,
+                    Longitude = selectedVenue.location.lng,
+                    VenueName = selectedVenue.name
+                };
 
-            using (SQLiteConnection conn = new SQLiteConnection(App.DatabaseLocation))
+                using (SQLiteConnection conn = new SQLiteConnection(App.DatabaseLocation))
+                {
+                    conn.CreateTable<Post>();
+                    int rows = conn.Insert(post);
+
+                    if (rows > 0)
+                        DisplayAlert("Success", "Experience succesfully inserter", "Ok");
+                    else
+                        DisplayAlert("Failure", "Experience failed to be inserted", "Ok");
+                }
+            }
+            catch (NullReferenceException nre)
             {
-                conn.CreateTable<Post>();
-                int rows = conn.Insert(post);
 
-                if (rows > 0)
-                    DisplayAlert("Success", "Experience succesfully inserter", "Ok");
-                else
-                    DisplayAlert("Failure", "Experience failed to be inserted", "Ok");
+            }
+            catch (Exception ex)
+            {
+
+                throw;
             }
         }
     }
